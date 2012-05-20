@@ -1,12 +1,16 @@
 #!/usr/bin/python3
 
-import sys, os, mmap, curses, argparse, bisect, struct, readline, fcntl, termios
-
 # TODO
 # regex search
 # go to previous match
 # insert/delete bytes
 # horizontal scrolling
+
+import sys, os, mmap, curses, argparse, bisect, struct, readline
+
+# readline sets LINES and COLUMNS, which screws up curses SIGWINCH handling
+os.unsetenv('LINES')
+os.unsetenv('COLUMNS')
 
 def main():
 	parser = argparse.ArgumentParser(description='View or edit a file.')
@@ -152,7 +156,7 @@ class HexInterface:
 			self.scroll_to_cursor()
 			c = self.scr.getch()
 			self.status = self.file.file.name
-			if c in (curses.KEY_RESIZE, -1):
+			if c == curses.KEY_RESIZE:
 				self.resize()
 			elif c == curses.KEY_MOUSE:
 				self.process_mouse(*curses.getmouse())
@@ -163,8 +167,6 @@ class HexInterface:
 			self.pos = max(0, min(self.pos, self.file.size-1))
 	
 	def resize(self):
-		# unfortunately readline screws up curses SIGWINCH handling, so we have to set the size manually:
-		curses.resize_term(*struct.unpack('2h4x', fcntl.ioctl(1, termios.TIOCGWINSZ, bytes(8))))
 		self.h, self.w = self.scr.getmaxyx()
 		self.h -= 1
 		self.cols = self.fixedcols or max(1, (self.w - 7 - self.addrw) // 4)
