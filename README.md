@@ -3,7 +3,10 @@ hex.py
 
 Simple ncurses hex viewer/editor.
 
+![Screenshot](screenshot.png)
+
 Features:
+
  * Find byte sequences
  * Decode numbers
  * Overwrite bytes
